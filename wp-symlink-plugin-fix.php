@@ -22,6 +22,10 @@ function dd_symlink_fix( $url, $path, $plugin ) {
 	
 //	echo 'Got URL: ' . $url . "<br>\n";
 
+	// We have nothing to work with -- bail
+	if( empty( $path ) && empty( $plugin ) )
+		return $url;
+
 //	echo 'Removing base from retrieved URL' . "<br>\n";
 
 	$base_url = substr( $url, strlen( $plugin_base_url ) );
