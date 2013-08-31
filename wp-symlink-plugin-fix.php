@@ -48,7 +48,7 @@ function dd_symlink_fix( $url, $path, $plugin ) {
 			$real_plugin_dir = realpath( WP_PLUGIN_DIR . '/' . $plugin_dir );
 //			echo 'Found a link!: ' . $plugin_dir . ' = ' . $real_plugin_dir . "<br>\n";
 
-			if( 0 === strpos( $real_plugin_dir, $base_url ) ) {
+			if( 0 === strpos( $base_url, $real_plugin_dir ) ) {
 				
 				$real_base_url = str_replace( $real_plugin_dir, $plugin_dir, $base_url );
 				$url = WP_PLUGIN_URL . '/' . $real_base_url;
