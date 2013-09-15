@@ -2,18 +2,48 @@
 /*
 
 Plugin Name: Plugin Symlink Fix
-Description: Allow plugins to load from a symlinked directory without special names or paths
+Description: Allow plugins to load from symlinked directories without special names or paths
 Author: David Dean
 Version: 1.0
 Author URI: http://www.generalthreat.com/
 
 */
-add_filter( 'plugins_url', 'dd_symlink_fix', 10, 3 );
+
+add_action( 'activate_plugin', 'dd_symlink_activation_fix', 10, 2 );
+
+add_filter( 'plugins_url', 'dd_symlink_url_fix', 10, 3 );
+
 
 /**
- * 
+ * When used as directed, __FILE__ hooks plugin activation to the real path, but
+ *  WP will try to activate using the symlink path.
+ * This quick hack creates the expected activate_* hook just in time and 
+ *  copies the original function(s) over.
+ *
+ * WARNING: activate_plugin does not fire during 'error_scrape', so error messages
+ *  echoed during activation will not be visible. Users will only see the generic
+ *  "This plugin ... triggered a fatal error" message.
  */
-function dd_symlink_fix( $url, $path, $plugin ) {
+function dd_symlink_activation_fix( $plugin, $network_wide ) {
+
+	global $wp_filter;
+
+//	echo( 'Intercepted activation request for: ' . $plugin );
+
+	# If realpath doesn't match the generated path, create an action pointing to the relative path
+	$real_path = realpath( WP_PLUGIN_DIR . '/' . $plugin );
+
+//	echo( 'Got real path for: ' . $plugin . ' as: ' . $real_path . "<br>\n");
+
+	if ( $real_path != WP_PLUGIN_DIR . '/' . $plugin )
+		$wp_filter['activate_' . $plugin] = $wp_filter['activate_' . substr( $real_path, 1 )];
+}
+
+/**
+ * Calls to plugins_url() are made using the realpath, but this is probably not within the web root.
+ * This function rewrites the URL to use the fake path. Includes caching for the path translation.
+ */
+function dd_symlink_url_fix( $url, $path, $plugin ) {
 	
 	$plugin_base_url = WP_PLUGIN_URL;
 //	echo 'Called with:' . "<br>\n";
@@ -32,15 +62,13 @@ function dd_symlink_fix( $url, $path, $plugin ) {
 
 //	echo 'New URL: ' . $base_url . "<br>\n";
 
-	// TODO: cache and scan cache first
+	// Scan cache first
 	if( $real_base_url = wp_cache_get( $base_url, 'plugin-realpath' ) ) {
 		return WP_PLUGIN_URL . '/' . $real_base_url;
 	}
 
 //	echo "Scanning plugin dir: " . WP_PLUGIN_DIR . "...<br>\n";
 	$plugin_dirs = scandir( WP_PLUGIN_DIR );
-
-//	var_dump( $plugin_dirs );
 
 	foreach( $plugin_dirs as $plugin_dir ) {
 		if( is_link( WP_PLUGIN_DIR . '/' . $plugin_dir ) ) {
@@ -58,7 +86,6 @@ function dd_symlink_fix( $url, $path, $plugin ) {
 				break;
 				
 			}
-
 		}
 	}
 
