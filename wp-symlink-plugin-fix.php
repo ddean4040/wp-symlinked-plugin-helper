@@ -46,36 +46,27 @@ function dd_symlink_activation_fix( $plugin, $network_wide ) {
 function dd_symlink_url_fix( $url, $path, $plugin ) {
 	
 	$plugin_base_url = WP_PLUGIN_URL;
-//	echo 'Called with:' . "<br>\n";
-//	echo 'Path: ' . $path . "<br>\n";
-//	echo 'Plugin: ' . $plugin . "<br>\n";
-	
-//	echo 'Got URL: ' . $url . "<br>\n";
 
 	// We have nothing to work with -- bail
 	if( empty( $path ) && empty( $plugin ) )
 		return $url;
 
-//	echo 'Removing base from retrieved URL' . "<br>\n";
-
 	$base_url = substr( $url, strlen( $plugin_base_url ) );
 
-//	echo 'New URL: ' . $base_url . "<br>\n";
-
-	// Scan cache first
+	// Scan cache first - HIGHLY recommended for production use
 	if( $real_base_url = wp_cache_get( $base_url, 'plugin-realpath' ) ) {
 		return WP_PLUGIN_URL . '/' . $real_base_url;
 	}
 
-//	echo "Scanning plugin dir: " . WP_PLUGIN_DIR . "...<br>\n";
+	// Scan plugins folder looking for a symlink that matches the plugin path from the URL
 	$plugin_dirs = scandir( WP_PLUGIN_DIR );
 
 	foreach( $plugin_dirs as $plugin_dir ) {
 		if( is_link( WP_PLUGIN_DIR . '/' . $plugin_dir ) ) {
 
 			$real_plugin_dir = realpath( WP_PLUGIN_DIR . '/' . $plugin_dir );
-//			echo 'Found a link!: ' . $plugin_dir . ' = ' . $real_plugin_dir . "<br>\n";
 
+			// Found a match! - the real path of the plugin folder is the start of the URL path
 			if( 0 === strpos( $base_url, $real_plugin_dir ) ) {
 				
 				$real_base_url = str_replace( $real_plugin_dir, $plugin_dir, $base_url );
@@ -89,7 +80,6 @@ function dd_symlink_url_fix( $url, $path, $plugin ) {
 		}
 	}
 
-//	echo 'Returning: ' . $url . "<br>\n";
 	return $url;
 }
 
