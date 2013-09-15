@@ -80,6 +80,11 @@ function dd_symlink_url_fix( $url, $path, $plugin ) {
 		}
 	}
 
+	// We scanned every plugin folder and didn't find a link for this one, so it's probably a regular folder.
+	// Add it to the cache so we don't search for it again.
+	if( empty( $real_base_url ) )
+		wp_cache_set( $base_url, $base_url, 'plugin-realpath' );
+
 	return $url;
 }
 
