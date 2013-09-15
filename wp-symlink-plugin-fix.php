@@ -1,7 +1,7 @@
 <?php
 /*
 
-Plugin Name: Plugin Symlink Fix
+Plugin Name: Symlinked Plugin Helper
 Description: Allow plugins to load from symlinked directories without special names or paths
 Author: David Dean
 Version: 1.0

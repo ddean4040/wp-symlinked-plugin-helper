@@ -17,6 +17,6 @@ Details
 
 ### Fixes these issues with symlinked plugins:
 
-* WordPress build URLs based on the real path of plugin files, leaving files symlinked from outside the web root inaccessible.
+* WordPress builds URLs based on the real path of plugin files, leaving files symlinked from outside the web root inaccessible.
 * Using `register_activation_hook( __FILE__, 'my_function' )` as directed creates a hook that WP will never call, so a symlinked plugin can't run its activation function.
 
